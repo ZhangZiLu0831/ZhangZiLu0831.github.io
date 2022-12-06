@@ -1,0 +1,830 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/iconstar.png">
+  <link rel="icon" href="/img/iconstar.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Zhang ZL">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Noah-MP简介Noah-MP是以Noah-LSM为基础发展的一种多层模型，相对于Noah-LSM，它对于下垫面的冠层、土壤、积雪有了更多的拓展。 Noah-MP允许3层雪，对于雪的模拟有了极大的提升，同时，Polar-WRF中对Noah LSM和Noah MP中海冰过程进行了改进，使得其在极地区域的能量模拟有了较大改善。雪是重要的地表参数，尤其在积雪冰川常年覆盖的极地区域，将Polar-WRF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Noah MP中雪反照率的计算改进">
+<meta property="og:url" content="http://zhangzilu0831.github.io/2022/11/14/Noah-MP%E4%B8%AD%E9%9B%AA%E5%8F%8D%E7%85%A7%E7%8E%87%E7%9A%84%E8%AE%A1%E7%AE%97%E6%94%B9%E8%BF%9B/index.html">
+<meta property="og:site_name" content="ZZL的太空垃圾站">
+<meta property="og:description" content="Noah-MP简介Noah-MP是以Noah-LSM为基础发展的一种多层模型，相对于Noah-LSM，它对于下垫面的冠层、土壤、积雪有了更多的拓展。 Noah-MP允许3层雪，对于雪的模拟有了极大的提升，同时，Polar-WRF中对Noah LSM和Noah MP中海冰过程进行了改进，使得其在极地区域的能量模拟有了较大改善。雪是重要的地表参数，尤其在积雪冰川常年覆盖的极地区域，将Polar-WRF">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.jsg.utexas.edu/noah-mp/files/webschematic4.jpg">
+<meta property="og:image" content="http://zhangzilu0831.github.io/npah_snow.PNG">
+<meta property="og:image" content="https://alpha.glilmu.com/i/2022/12/05/txpqcz.jpg">
+<meta property="article:published_time" content="2022-11-14T07:48:21.000Z">
+<meta property="article:modified_time" content="2022-12-06T03:00:08.390Z">
+<meta property="article:author" content="Zhang ZL">
+<meta property="article:tag" content="WRF">
+<meta property="article:tag" content="数值模式">
+<meta property="article:tag" content="陆面模式">
+<meta property="article:tag" content="Noah MP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.jsg.utexas.edu/noah-mp/files/webschematic4.jpg">
+  
+  
+  
+  <title>Noah MP中雪反照率的计算改进 - ZZL的太空垃圾站</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"zhangzilu0831.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":"ITKGi1xkIxo7YIBKzMyC7Squ-gzGzoHsz","app_key":"2JxIMMjmZEvQ6TFr8tD2ndYv","server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+  
+
+
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>ZhangZL</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/comments/">
+                <i class="iconfont icon-kakao-talk-fill"></i>
+                留言
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/radio/">
+                <i class="iconfont icon-music"></i>
+                电台
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/seaice.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Noah MP中雪反照率的计算改进"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-11-14 15:48" pubdate>
+          2022年11月14日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          18k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          149 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="leancloud-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="leancloud-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Noah MP中雪反照率的计算改进</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="Noah-MP简介"><a href="#Noah-MP简介" class="headerlink" title="Noah-MP简介"></a>Noah-MP简介</h1><p>Noah-MP是以Noah-LSM为基础发展的一种多层模型，相对于Noah-LSM，它对于下垫面的冠层、土壤、积雪有了更多的拓展。</p>
+<p>Noah-MP允许3层雪，对于雪的模拟有了极大的提升，同时，Polar-WRF中对Noah LSM和Noah MP中海冰过程进行了改进，使得其在极地区域的能量模拟有了较大改善。<br>雪是重要的地表参数，尤其在积雪冰川常年覆盖的极地区域，将Polar-WRF中雪反照率的修改、订正十分必要。</p>
+<p><img src="https://www.jsg.utexas.edu/noah-mp/files/webschematic4.jpg" srcset="/img/loading.gif" lazyload alt="Noah-MP示意图" title="Noah MP"></p>
+<h1 id="Noah-MP与WRF的耦合"><a href="#Noah-MP与WRF的耦合" class="headerlink" title="Noah-MP与WRF的耦合"></a>Noah-MP与WRF的耦合</h1><p>Noah-Mp主要通过读取MPTABLE.TBL读取所需参数(default)，主要程序由三部分组成：</p>
+<ol>
+<li>计算各冠层地表过程（径流、土壤湿度、雪过程、反照率与能量平衡等） 的程序：module_sf_noahmpdrv.F</li>
+<li>计算冰川表面能量的module_sf_noahmp_glacier.F.</li>
+<li>调用noah-mp的程序的module_surface_driver。</li>
+</ol>
+<p><strong>noahmp_glacier.f</strong>程序的使用与WPS输入的静态地理数据有关，当土地分类为Snow or ice时使用。<br>在Noah-mp中，<strong>默认的土地并不区分冰雪，而是根据输入的雪深等参数进行计算调整，SNOWH</strong>。</p>
+<h2 id="MPTABLE-TBL"><a href="#MPTABLE-TBL" class="headerlink" title="MPTABLE.TBL"></a>MPTABLE.TBL</h2><p>MPTABLE.TBL中给出了Noah-MP计算所需的参数，其中与积雪相关的参数如下</p>
+<figure class="highlight erlang-repl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs erlang-repl">&amp;noahmp_rad_parameters<br> !------------------------------------------------------------------------------<br> !                <span class="hljs-number">1</span>       <span class="hljs-number">2</span>       <span class="hljs-number">3</span>       <span class="hljs-number">4</span>       <span class="hljs-number">5</span>       <span class="hljs-number">6</span>       <span class="hljs-number">7</span>       <span class="hljs-number">8</span>     soil color index for soil albedo<br> !------------------------------------------------------------------------------<br> ALBSAT_VIS =   <span class="hljs-number">0.15</span>,   <span class="hljs-number">0.11</span>,   <span class="hljs-number">0.10</span>,   <span class="hljs-number">0.09</span>,   <span class="hljs-number">0.08</span>,   <span class="hljs-number">0.07</span>,   <span class="hljs-number">0.06</span>,   <span class="hljs-number">0.05</span>   ! saturated soil albedos<br> ALBSAT_NIR =   <span class="hljs-number">0.30</span>,   <span class="hljs-number">0.22</span>,   <span class="hljs-number">0.20</span>,   <span class="hljs-number">0.18</span>,   <span class="hljs-number">0.16</span>,   <span class="hljs-number">0.14</span>,   <span class="hljs-number">0.12</span>,   <span class="hljs-number">0.10</span>   ! saturated soil albedos<br> ALBDRY_VIS =   <span class="hljs-number">0.27</span>,   <span class="hljs-number">0.22</span>,   <span class="hljs-number">0.20</span>,   <span class="hljs-number">0.18</span>,   <span class="hljs-number">0.16</span>,   <span class="hljs-number">0.14</span>,   <span class="hljs-number">0.12</span>,   <span class="hljs-number">0.10</span>   ! dry soil albedos<br> ALBDRY_NIR =   <span class="hljs-number">0.54</span>,   <span class="hljs-number">0.44</span>,   <span class="hljs-number">0.40</span>,   <span class="hljs-number">0.36</span>,   <span class="hljs-number">0.32</span>,   <span class="hljs-number">0.28</span>,   <span class="hljs-number">0.24</span>,   <span class="hljs-number">0.20</span>   ! dry soil albedos<br> ALBICE     =   <span class="hljs-number">0.80</span>,   <span class="hljs-number">0.55</span>                                                   ! albedo land ice: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br> ALBLAK     =   <span class="hljs-number">0.60</span>,   <span class="hljs-number">0.40</span>                                                   ! albedo frozen lakes: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br> OMEGAS     =   <span class="hljs-number">0.8</span> ,   <span class="hljs-number">0.4</span>                                                    ! two-stream parameter omega for snow<br> BETADS     =   <span class="hljs-number">0.5</span>                                                            ! two-stream parameter betad for snow<br> BETAIS     =   <span class="hljs-number">0.5</span>                                                            ! two-stream parameter betaI for snow<br> EG         =   <span class="hljs-number">0.97</span>,   <span class="hljs-number">0.98</span>                                                   ! emissivity soil surface <span class="hljs-number">1</span>-soil;<span class="hljs-number">2</span>-lake<br><br>/<br><br>&amp;noahmp_global_parameters<br>…<br>! adjustable parameters for snow processes<br><br>  Z0SNO  = <span class="hljs-number">0.002</span>        !snow surface roughness length (m) (<span class="hljs-number">0.002</span>)<br>  SSI    = <span class="hljs-number">0.03</span>         !liquid water holding capacity for snowpack (m3/m3) (<span class="hljs-number">0.03</span>)<br>  SNOW_RET_FAC  = <span class="hljs-number">5</span>.e-<span class="hljs-number">5</span> !snowpack water release timescale factor (<span class="hljs-number">1</span>/s)<br>  SNOW_EMIS     = <span class="hljs-number">0.95</span>  !snow emissivity (bring from hard-coded value of <span class="hljs-number">1.0</span> to here)<br>  SWEMX  = <span class="hljs-number">1.00</span>         !new snow mass to fully cover old snow (mm)<br>                        !equivalent to <span class="hljs-number">10</span>mm depth (density = <span class="hljs-number">100</span> kg/m3)<br>  TAU0          = <span class="hljs-number">1</span>.e6  !tau0 from Yang97 eqn. <span class="hljs-number">10</span>a<br>  GRAIN_GROWTH  = <span class="hljs-number">5000</span>. !growth from vapor diffusion Yang97 eqn. <span class="hljs-number">10</span>b<br>  EXTRA_GROWTH  = <span class="hljs-number">10</span>.   !extra growth near freezing Yang97 eqn. <span class="hljs-number">10</span>c<br>  DIRT_SOOT     = <span class="hljs-number">0.3</span>   !dirt and soot term Yang97 eqn. <span class="hljs-number">10</span>d<br>  BATS_COSZ     = <span class="hljs-number">2.0</span>   !zenith angle snow albedo adjustment; b in Yang97 eqn. <span class="hljs-number">15</span><br>  BATS_VIS_NEW  = <span class="hljs-number">0.95</span>  !new snow visible albedo<br>  BATS_NIR_NEW  = <span class="hljs-number">0.65</span>  !new snow NIR albedo<br>  BATS_VIS_AGE  = <span class="hljs-number">0.2</span>   !age factor for diffuse visible snow albedo Yang97 eqn. <span class="hljs-number">17</span><br>  BATS_NIR_AGE  = <span class="hljs-number">0.5</span>   !age factor for diffuse NIR snow albedo Yang97 eqn. <span class="hljs-number">18</span><br>  BATS_VIS_DIR  = <span class="hljs-number">0.4</span>   !cosz factor for direct visible snow albedo Yang97 eqn. <span class="hljs-number">15</span><br>  BATS_NIR_DIR  = <span class="hljs-number">0.4</span>   !cosz factor for direct NIR snow albedo Yang97 eqn. <span class="hljs-number">16</span><br>  RSURF_SNOW = <span class="hljs-number">50.0</span>     !surface resistence for snow [s/m]<br>  RSURF_EXP = <span class="hljs-number">5.0</span>       !exponent in the shape parameter for soil resistance option <span class="hljs-number">1</span><br><br>/<br></code></pre></td></tr></table></figure>
+<p>通过修改MPTABLE.TBL中的雪过程参数可以对参数化方案进行优化。</p>
+<h2 id="Noah-MP中的雪反照率方案"><a href="#Noah-MP中的雪反照率方案" class="headerlink" title="Noah-MP中的雪反照率方案"></a>Noah-MP中的雪反照率方案</h2><p>Noah-MP LSM包括单独的冰川处理和改进的雪物理方案，在积雪最多可达三层，该方法还采用了一种改进的双流辐射传输方案，考虑了三维冠层结构，计算植被反射、吸收和传输的辐射通量。该LSM使用“平铺”(tile)方法计算反照率，这是能源预算中的一个关键因素，考虑到裸露的地面、植被冠层和积雪。<br>对于北极地区，土地利用类型对于反照率的影响较小，在地面上，主要考虑冰川与积雪的反照率。</p>
+<ol>
+<li><p>CLASS方案</p>
+<p>CLASS方案的公式计算如下：<br>$$<br>\alpha_1&#x3D;0.55+(\alpha_{old}-0.55 )\exp^{\frac{-0.01dt}{3600}} \tag{1}<br>$$<br>$$<br>\mathcal f_{sn}&#x3D;tanh(\frac{h_{sn}}{2.5_{z_0}(\frac{\rho_{sn}}{\rho_{new}})^{\mathcal{f}<em>m}}) \tag{2}<br>$$<br>$$<br>\alpha_s&#x3D;\alpha</em>{1}+\mathcal f_{sn}(0.84-\alpha_1) \tag{3}<br>$$<br>$$<br>\alpha_{sd1}&#x3D;\alpha_{sd2} &#x3D;\alpha_{si1}&#x3D;\alpha_{si2}\tag{4}<br>$$</p>
+</li>
+</ol>
+<p>其中，$\alpha_{old}$为最后时间步长(dt)反照率，$\mathcal f_{sn}$为积雪量（分数表达），$h_{sn}$为积雪深度,$\rho_{sn}$积雪密度,$\rho_{new}$新雪密度，设置为$100kg&#x2F;m^{-3}$，$\mathcal{f}<em>m$为融化因子，默认值为1.0，$\alpha</em>{sd1},\alpha_{sd2} ,\alpha_{si1},\alpha_{si2}$分别为可见光、近红外波段的直接和漫反照率。</p>
+<p>CLASS方案相对简单，由用户定义的衰减因子调制的指数速率降低雪反照率。该方法试图用一个时间常数参数隐含地解释影响雪反照率衰减的一系列因素，运算效率较高，却并不能较好地反映冰雪反照率的复杂过程。</p>
+<p>代码中CLASS方案的函数：</p>
+<figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><code class="hljs fortran"><span class="hljs-comment">!== begin snowalb_class ============================================================================</span><br><br>  <span class="hljs-function"><span class="hljs-keyword">SUBROUTINE</span></span> SNOWALB_CLASS (parameters,NBAND,QSNOW,DT,ALB,ALBOLD,ALBSND,ALBSNI,ILOC,JLOC)<br><span class="hljs-comment">! ----------------------------------------------------------------------</span><br>  <span class="hljs-keyword">IMPLICIT</span> <span class="hljs-keyword">NONE</span><br><span class="hljs-comment">! --------------------------------------------------------------------------------------------------</span><br><span class="hljs-comment">! input</span><br><br>  <span class="hljs-keyword">type</span> (noahmp_parameters), <span class="hljs-keyword">intent</span>(<span class="hljs-keyword">in</span>) :: parameters<br>  <span class="hljs-keyword">INTEGER</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: ILOC <span class="hljs-comment">!grid index</span><br>  <span class="hljs-keyword">INTEGER</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: JLOC <span class="hljs-comment">!grid index</span><br>  <span class="hljs-keyword">INTEGER</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: NBAND  <span class="hljs-comment">!number of waveband classes</span><br><br>  <span class="hljs-keyword">REAL</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: QSNOW     <span class="hljs-comment">!snowfall (mm/s)</span><br>  <span class="hljs-keyword">REAL</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: DT        <span class="hljs-comment">!time step (sec)</span><br>  <span class="hljs-keyword">REAL</span>,<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">IN</span>) :: ALBOLD    <span class="hljs-comment">!snow albedo at last time step</span><br><br><span class="hljs-comment">! in &amp; out</span><br><br>  <span class="hljs-keyword">REAL</span>,                <span class="hljs-keyword">INTENT</span>(INOUT) :: ALB        <span class="hljs-comment">! </span><br><span class="hljs-comment">! output</span><br><br>  <span class="hljs-keyword">REAL</span>, <span class="hljs-keyword">DIMENSION</span>(<span class="hljs-number">1</span>:<span class="hljs-number">2</span>),<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">OUT</span>) :: ALBSND <span class="hljs-comment">!snow albedo for direct(1=vis, 2=nir)</span><br>  <span class="hljs-keyword">REAL</span>, <span class="hljs-keyword">DIMENSION</span>(<span class="hljs-number">1</span>:<span class="hljs-number">2</span>),<span class="hljs-keyword">INTENT</span>(<span class="hljs-keyword">OUT</span>) :: ALBSNI <span class="hljs-comment">!snow albedo for diffuse</span><br><span class="hljs-comment">! ---------------------------------------------------------------------------------------------</span><br><br><span class="hljs-comment">! ------------------------ local variables ----------------------------------------------------</span><br>  <span class="hljs-keyword">INTEGER</span> :: IB          <span class="hljs-comment">!waveband class</span><br><br><span class="hljs-comment">! ---------------------------------------------------------------------------------------------</span><br><span class="hljs-comment">! zero albedos for all points</span><br><br>        ALBSND(<span class="hljs-number">1</span>: NBAND) = <span class="hljs-number">0.</span><br>        ALBSNI(<span class="hljs-number">1</span>: NBAND) = <span class="hljs-number">0.</span><br><br><span class="hljs-comment">! when cosz &gt; 0</span><br><br>         ALB = <span class="hljs-number">0.55</span> + (ALBOLD-<span class="hljs-number">0.55</span>) * <span class="hljs-built_in">EXP</span>(-<span class="hljs-number">0.01</span>*DT/<span class="hljs-number">3600.</span>)<br><br><span class="hljs-comment">! 1 mm fresh snow(SWE) -- 10mm snow depth, assumed the fresh snow density 100kg/m3</span><br><span class="hljs-comment">! here assume 1cm snow depth will fully cover the old snow</span><br><br>         <span class="hljs-keyword">IF</span> (QSNOW &gt; <span class="hljs-number">0.</span>) <span class="hljs-keyword">then</span><br>           ALB = ALB + <span class="hljs-built_in">MIN</span>(QSNOW,parameters%SWEMX/DT) * (<span class="hljs-number">0.84</span>-ALB)/(parameters%SWEMX/DT)<br>         <span class="hljs-keyword">ENDIF</span><br><br>         ALBSNI(<span class="hljs-number">1</span>)= ALB         <span class="hljs-comment">! vis diffuse</span><br>         ALBSNI(<span class="hljs-number">2</span>)= ALB         <span class="hljs-comment">! nir diffuse</span><br>         ALBSND(<span class="hljs-number">1</span>)= ALB         <span class="hljs-comment">! vis direct</span><br>         ALBSND(<span class="hljs-number">2</span>)= ALB         <span class="hljs-comment">! nir direct</span><br><br>  <span class="hljs-keyword">END</span> <span class="hljs-function"><span class="hljs-keyword">SUBROUTINE</span></span> SNOWALB_CLASS<br></code></pre></td></tr></table></figure>
+<ol start="2">
+<li><p>BATS方案</p>
+<p>生物圈-大气转移方案(BATS)地面雪反照率公式从Wiscombe和Warren(1980)的积雪辐射转移计算中推断出来的。是一种中等复杂算法，它允许较高的计算效率，同时保持可见光和近红外光谱上直接和漫反射率与雪龄、表面温度、太阳照明角和吸收杂质之间的上述相互作用。</p>
+<p>由于BATS算法在复杂性与计算效率的有着较好的平衡，该算法有着广泛地应用。在Noah-MP中，雪反照率的计算可由如下公式概括：<br>$$<br>\Z_c&#x3D;\frac{1.5}{1+cosZ}-0.5 \tag{1}<br>$$<br>$$<br>\alpha_{si1}&#x3D;0.95(1-0.2A_c) \tag{2}<br>$$<br>$$<br>\alpha_{si2}&#x3D;0.65(1-0.5A_c) \tag{3}<br>$$<br>$$<br>\alpha_{sd1}&#x3D;\alpha_{si1}+0.4Z_c(1-\alpha_{si1}) \tag{4}<br>$$<br>$$<br>\alpha_{sd2}&#x3D;\alpha_{si2}+0.4Z_c(1-\alpha_{si2}) \tag{5}<br>$$</p>
+</li>
+</ol>
+<p>Z为太阳高度角，$A_c$为雪龄。<br>雪龄由以下公式计算：<br>$$<br>   A_c&#x3D;\frac{\tau_s}{1+\tau_s} \tag{1}<br>$$<br>$$<br>\tau_s^t&#x3D;\tau_s^{t-1}[1-max(0,\Delta SWE)&#x2F;SWE_{MX}] \tag{2}<br>$$<br>$$<br>\Delta\tau_s&#x3D;(r_1+r_2+r_3)\frac{\Delta t}{\tau_0} \tag{3}<br>$$<br>$$<br>\begin{cases}<br>arg&#x3D;5000(\cfrac{1}{TFRZ}-\cfrac{1}{TG} )\<br>r_1&#x3D;\exp(arg)\<br>r_2&#x3D;min(1,\exp(10×arg))\<br>r_3&#x3D;0.3<br>\end{cases} \tag{4}<br>$$<br>TFRZ为冰冻温度，设为273.16K，TG为地表温度。<br>根据上述描述，我们可以总结出BATS算法中可以调整的参数：<br><img src="/npah_snow.PNG" srcset="/img/loading.gif" lazyload alt="Noah-MP 雪参数表"><br>相关代码如下，少许中文注释为自行添加：</p>
+<figure class="highlight erlang-repl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br></pre></td><td class="code"><pre><code class="hljs erlang-repl">! 一些BATS参数，从MPTABLE中读取<br>!------------------------------------------------------------------------------------------!<br>! From the rad section of MPTABLE.TBL<br>!------------------------------------------------------------------------------------------!<br><br>     REAL :: ALBSAT(MBAND)       !saturated soil albedos: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br>     REAL :: ALBDRY(MBAND)       !dry soil albedos: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br>     REAL :: ALBICE(MBAND)       !albedo land ice: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br>     REAL :: ALBLAK(MBAND)       !albedo frozen lakes: <span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir<br>     REAL :: OMEGAS(MBAND)       !two-stream parameter omega for snow<br>     REAL :: BETADS              !two-stream parameter betad for snow<br>     REAL :: BETAIS              !two-stream parameter betad for snow<br>     REAL :: EG(<span class="hljs-number">2</span>)               !emissivity<br><br>!------------------------------------------------------------------------------------------!<br>! From the globals section of MPTABLE.TBL<br>!------------------------------------------------------------------------------------------!<br>REAL :: Z0SNO        !snow surface roughness length (m) (<span class="hljs-number">0.002</span>)<br>REAL :: SSI          !liquid water holding capacity for snowpack (m3/m3)<br>REAL :: SNOW_RET_FAC !snowpack water release timescale factor (<span class="hljs-number">1</span>/s)<br>REAL :: SNOW_EMIS    !snow emissivity<br>REAL :: SWEMX        !new snow mass to fully cover old snow (mm)<br>REAL :: TAU0         !tau0 from Yang97 eqn. <span class="hljs-number">10</span>a<br>REAL :: GRAIN_GROWTH !growth from vapor diffusion Yang97 eqn. <span class="hljs-number">10</span>b<br>REAL :: EXTRA_GROWTH !extra growth near freezing Yang97 eqn. <span class="hljs-number">10</span>c<br>REAL :: BATS_COSZ    !zenith angle snow albedo adjustment; b in Yang97 eqn. <span class="hljs-number">15</span><br>REAL :: BATS_VIS_NEW !new snow visible albedo<br>REAL :: BATS_NIR_NEW !new snow NIR albedo<br>REAL :: BATS_VIS_AGE !age factor for diffuse visible snow albedo Yang97 eqn. <span class="hljs-number">17</span><br>REAL :: BATS_NIR_AGE !age factor for diffuse NIR snow albedo Yang97 eqn. <span class="hljs-number">18</span><br>REAL :: BATS_VIS_DIR !cosz factor for direct visible snow albedo Yang97 eqn. <span class="hljs-number">15</span><br>REAL :: BATS_NIR_DIR !cosz factor for direct NIR snow albedo Yang97 eqn. <span class="hljs-number">16</span><br>REAL :: RSURF_SNOW   !surface resistance for snow(s/m)<br>REAL :: DIRT_SOOT    !dirt and soot term Yang97 eqn. <span class="hljs-number">10</span>d<br><br>！开始辐射计算，该函数主要由计算反照率的ALBEDO函数和计算各太阳辐射的函数SURRAD的调用结合<br>!== begin radiation ================================================================================<br><br>  SUBROUTINE RADIATION (parameters,VEGTYP  ,IST     ,ICE     ,NSOIL   , &amp; !in<br>                        SNEQVO  ,SNEQV   ,DT      ,COSZ    ,SNOWH   , &amp; !in<br>                        TG      ,TV      ,FSNO    ,QSNOW   ,FWET    , &amp; !in<br>                        ELAI    ,ESAI    ,SMC     ,SOLAD   ,SOLAI   , &amp; !in<br>                        FVEG    ,ILOC    ,JLOC    ,                   &amp; !in<br>                        ALBOLD  ,TAUSS   ,                            &amp; !inout<br>                        FSUN    ,LAISUN  ,LAISHA  ,PARSUN  ,PARSHA  , &amp; !out<br>                        SAV     ,SAG     ,FSR     ,FSA     ,FSRV    , &amp;<br>                        FSRG    ,ALBSND  ,ALBSNI  ,BGAP    ,WGAP    )   !out<br>！以下省略参数说明部分<br>    CALL(ALBEDO) ！调用函数计算反照率<br>    CALL SURRAD  ！根据ALBEDO函数计算结果，计算太阳辐射各分量<br>  END SUBROUTINE RADIATION<br>!== begin albedo ===================================================================================<br><br>  SUBROUTINE ALBEDO (parameters,VEGTYP ,IST    ,ICE    ,NSOIL  , &amp; !in<br>                     DT     ,COSZ   ,FAGE   ,ELAI   ,ESAI   , &amp; !in<br>                     TG     ,TV     ,SNOWH  ,FSNO   ,FWET   , &amp; !in<br>                     SMC    ,SNEQVO ,SNEQV  ,QSNOW  ,FVEG   , &amp; !in<br>                     ILOC   ,JLOC   ,                         &amp; !in<br>                     ALBOLD ,TAUSS                          , &amp; !inout<br>                     ALBGRD ,ALBGRI ,ALBD   ,ALBI   ,FABD   , &amp; !out<br>                     FABI   ,FTDD   ,FTID   ,FTII   ,FSUN   , &amp; !out<br>                     FREVI  ,FREVD  ,FREGD  ,FREGI  ,BGAP   , &amp; !out<br>                     WGAP   ,ALBSND ,ALBSNI )<br><br>! --------------------------------------------------------------------------------------------------<br>! surface albedos. also fluxes (per unit incoming direct and diffuse<br>! radiation) reflected, transmitted, and absorbed by vegetation.<br>! also sunlit fraction of the canopy.<br>! --------------------------------------------------------------------------------------------------<br>END SUBROUTINE ALBEDO<br><br>! 计算雪龄<br>!== begin snow_age =================================================================================<br><br>  SUBROUTINE SNOW_AGE (parameters,DT,TG,SNEQVO,SNEQV,TAUSS,FAGE)<br>! ----------------------------------------------------------------------<br>  IMPLICIT NONE<br>! ------------------------ code history ------------------------------------------------------------<br>! from BATS<br>! ------------------------ input/output variables --------------------------------------------------<br>!input<br>  type (noahmp_parameters), intent(in) :: parameters<br>   REAL, INTENT(IN) :: DT        !main time step (s)<br>   REAL, INTENT(IN) :: TG        !ground temperature (k)<br>   REAL, INTENT(IN) :: SNEQVO    !snow mass at last time step(mm)<br>   REAL, INTENT(IN) :: SNEQV     !snow water per unit ground area (mm)<br><br>!output<br>   REAL, INTENT(OUT) :: FAGE     !snow age<br><br>!input/output<br>   REAL, INTENT(INOUT) :: TAUSS      !non-dimensional snow age<br>!local<br>   REAL            :: TAGE       !total aging effects<br>   REAL            :: AGE1       !effects of grain growth due to vapor diffusion<br>   REAL            :: AGE2       !effects of grain growth at freezing of melt water<br>   REAL            :: AGE3       !effects of soot<br>   REAL            :: DELA       !temporary variable<br>   REAL            :: SGE        !temporary variable<br>   REAL            :: DELS       !temporary variable<br>   REAL            :: DELA0      !temporary variable<br>   REAL            :: ARG        !temporary variable<br>! See Yang et al. (<span class="hljs-number">1997</span>) J.of Climate for detail.<br>!---------------------------------------------------------------------------------------------------<br><br>   IF(SNEQV.LE.<span class="hljs-number">0.0</span>) THEN<br>          TAUSS = <span class="hljs-number">0</span>.<br>   ELSE<br>          DELA0 = DT/parameters<span class="hljs-comment">%TAU0</span><br>          ARG   = parameters<span class="hljs-comment">%GRAIN_GROWTH*(1./TFRZ-1./TG)</span><br>          AGE1  = EXP(ARG)<br>          AGE2  = EXP(AMIN1(<span class="hljs-number">0</span>.,parameters<span class="hljs-comment">%EXTRA_GROWTH*ARG))</span><br>          AGE3  = parameters<span class="hljs-comment">%DIRT_SOOT</span><br>          TAGE  = AGE1+AGE2+AGE3<br>          DELA  = DELA0*TAGE<br>          DELS  = AMAX1(<span class="hljs-number">0.0</span>,SNEQV-SNEQVO) / parameters<span class="hljs-comment">%SWEMX</span><br>          SGE   = (TAUSS+DELA)*(<span class="hljs-number">1.0</span>-DELS)<br>          TAUSS = AMAX1(<span class="hljs-number">0</span>.,SGE)<br>   ENDIF<br><br>   FAGE= TAUSS/(TAUSS+<span class="hljs-number">1</span>.)<br><br>  END SUBROUTINE SNOW_AGE<br>!== begin snowalb_bats =============================================================================<br><br>  SUBROUTINE SNOWALB_BATS (parameters,NBAND,FSNO,COSZ,FAGE,ALBSND,ALBSNI)<br>! --------------------------------------------------------------------------------------------------<br>  IMPLICIT NONE<br>! --------------------------------------------------------------------------------------------------<br>! input<br><br>  type (noahmp_parameters), intent(in) :: parameters<br>  INTEGER,INTENT(IN) :: NBAND  !number of waveband classes<br><br>  REAL,INTENT(IN) :: COSZ    !cosine solar zenith angle<br>  REAL,INTENT(IN) :: FSNO    !snow cover fraction (-)<br>  REAL,INTENT(IN) :: FAGE    !snow age correction<br><br>! output<br><br>  REAL, DIMENSION(<span class="hljs-number">1</span>:<span class="hljs-number">2</span>),INTENT(OUT) :: ALBSND !snow albedo for direct(<span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir)<br>  REAL, DIMENSION(<span class="hljs-number">1</span>:<span class="hljs-number">2</span>),INTENT(OUT) :: ALBSNI !snow albedo for diffuse<br>! ---------------------------------------------------------------------------------------------<br><br>! ------------------------ local variables ----------------------------------------------------<br>  INTEGER :: IB          !waveband class<br><br>  REAL :: FZEN                 !zenith angle correction<br>  REAL :: CF1                  !temperary variable<br>  REAL :: SL2                  !<span class="hljs-number">2</span>.*SL<br>  REAL :: SL1                  !<span class="hljs-number">1</span>/SL<br>  REAL :: SL                   !adjustable parameter<br>!  REAL, PARAMETER :: C1 = <span class="hljs-number">0.2</span>  !default in BATS <br>!  REAL, PARAMETER :: C2 = <span class="hljs-number">0.5</span>  !default in BATS<br>!  REAL, PARAMETER :: C1 = <span class="hljs-number">0.2</span> * <span class="hljs-number">2</span>. ! double the default to match Sleepers River&#x27;s<br>!  REAL, PARAMETER :: C2 = <span class="hljs-number">0.5</span> * <span class="hljs-number">2</span>. ! snow surface albedo (double aging effects)<br>! ---------------------------------------------------------------------------------------------<br>! zero albedos for all points<br><br>        ALBSND(<span class="hljs-number">1</span>: NBAND) = <span class="hljs-number">0</span>.<br>        ALBSNI(<span class="hljs-number">1</span>: NBAND) = <span class="hljs-number">0</span>.<br><br>! when cosz &gt; <span class="hljs-number">0</span><br><br>        SL=parameters<span class="hljs-comment">%BATS_COSZ</span><br>        SL1=<span class="hljs-number">1</span>./SL<br>        SL2=<span class="hljs-number">2</span>.*SL<br>        CF1=((<span class="hljs-number">1</span>.+SL1)/(<span class="hljs-number">1</span>.+SL2*COSZ)-SL1)<br>        FZEN=AMAX1(CF1,<span class="hljs-number">0</span>.)<br><br>        ALBSNI(<span class="hljs-number">1</span>)=parameters<span class="hljs-comment">%BATS_VIS_NEW*(1.-parameters%BATS_VIS_AGE*FAGE)         </span><br>        ALBSNI(<span class="hljs-number">2</span>)=parameters<span class="hljs-comment">%BATS_NIR_NEW*(1.-parameters%BATS_NIR_AGE*FAGE)        </span><br><br>        ALBSND(<span class="hljs-number">1</span>)=ALBSNI(<span class="hljs-number">1</span>)+parameters<span class="hljs-comment">%BATS_VIS_DIR*FZEN*(1.-ALBSNI(1))    !  vis direct</span><br>        ALBSND(<span class="hljs-number">2</span>)=ALBSNI(<span class="hljs-number">2</span>)+parameters<span class="hljs-comment">%BATS_VIS_DIR*FZEN*(1.-ALBSNI(2))    !  nir direct</span><br><br>  END SUBROUTINE SNOWALB_BATS<br>！地表反照率，考虑地面类型，雪反照率如何应用至地面中<br>!== begin groundalb ================================================================================<br><br>  SUBROUTINE GROUNDALB (parameters,NSOIL   ,NBAND   ,ICE     ,IST     , &amp; !in<br>                        FSNO    ,SMC     ,ALBSND  ,ALBSNI  ,COSZ    , &amp; !in<br>                        TG      ,ILOC    ,JLOC    ,                   &amp; !in<br>                        ALBGRD  ,ALBGRI  )                              !out<br>…！省略输入参数说明<br>!output<br><br>  REAL, DIMENSION(<span class="hljs-number">1</span>:    <span class="hljs-number">2</span>), INTENT(OUT) :: ALBGRD !ground albedo (direct beam: vis, nir)<br>  REAL, DIMENSION(<span class="hljs-number">1</span>:    <span class="hljs-number">2</span>), INTENT(OUT) :: ALBGRI !ground albedo (diffuse: vis, nir)<br><br>!local <br><br>  INTEGER                               :: IB     !waveband number (<span class="hljs-number">1</span>=vis, <span class="hljs-number">2</span>=nir)<br>  REAL                                  :: INC    !soil water correction factor for soil albedo<br>  REAL                                  :: ALBSOD !soil albedo (direct)<br>  REAL                                  :: ALBSOI !soil albedo (diffuse)<br>! --------------------------------------------------------------------------------------------------<br><br>  DO IB = <span class="hljs-number">1</span>, NBAND<br>        INC = MAX(<span class="hljs-number">0.11</span>-<span class="hljs-number">0.40</span>*SMC(<span class="hljs-number">1</span>), <span class="hljs-number">0</span>.)<br>        IF (IST .EQ. <span class="hljs-number">1</span>)  THEN                     !soil<br>           ALBSOD = MIN(parameters<span class="hljs-comment">%ALBSAT(IB)+INC,parameters%ALBDRY(IB))</span><br>           ALBSOI = ALBSOD<br>        ELSE IF (TG .GT. TFRZ) THEN               !unfrozen lake, wetland<br>           ALBSOD = <span class="hljs-number">0.06</span>/(MAX(<span class="hljs-number">0.01</span>,COSZ)**<span class="hljs-number">1.7</span> + <span class="hljs-number">0.15</span>)<br>           ALBSOI = <span class="hljs-number">0.06</span><br>        ELSE                                      !frozen lake, wetland<br>           ALBSOD = parameters<span class="hljs-comment">%ALBLAK(IB)</span><br>           ALBSOI = ALBSOD<br>        END IF<br><br>! increase desert and semi-desert albedos<br><br>!        IF (IST .EQ. <span class="hljs-number">1</span> .AND. ISC .EQ. <span class="hljs-number">9</span>) THEN<br>!           ALBSOD = ALBSOD + <span class="hljs-number">0.10</span><br>!           ALBSOI = ALBSOI + <span class="hljs-number">0.10</span><br>!        end if<br><br>        ALBGRD(IB) = ALBSOD*(<span class="hljs-number">1</span>.-FSNO) + ALBSND(IB)*FSNO<br>        ALBGRI(IB) = ALBSOI*(<span class="hljs-number">1</span>.-FSNO) + ALBSNI(IB)*FSNO<br>  END DO<br>！地表反照率与地面积雪量FSNO有关,FSNO与输入的雪水当量、雪深变量有关<br>  END SUBROUTINE GROUNDALB<br>！FSNO的计算<br>! ground snow cover fraction [Niu and Yang, <span class="hljs-number">2007</span>, JGR]<br><br>     FSNO = <span class="hljs-number">0</span>.<br>     IF(SNOWH.GT.<span class="hljs-number">0</span>.)  THEN<br>         BDSNO    = SNEQV / SNOWH<br>         FMELT    = (BDSNO/<span class="hljs-number">100</span>.)**parameters<span class="hljs-comment">%MFSNO</span><br>         !FSNO     = TANH( SNOWH /(<span class="hljs-number">2.5</span>* Z0 * FMELT))<br>         FSNO     = TANH( SNOWH /(parameters<span class="hljs-comment">%SCFFAC * FMELT)) ! C.He: bring hard-coded 2.5*z0 to MPTABLE tunable parameter SCFFAC</span><br>     ENDIF<br><br></code></pre></td></tr></table></figure>
+<p>综上，Noah-MP中的雪过程与反照率与输入的默认参数与场有关。<br>可修改：默认的MPTABLE与NpahLSM.F中，列出的与雪反照率相关的参数，见表1.<br>WPS输入的场：输入的ERA5的雪深等。<br>以上只考虑了地表过程，而Polar-WRF中，对于海冰的能量同样值得注意（对海冰场的修改）。<br>接下来将考虑与SNICAR模型结合，将SNICAR反照率反馈输入至polar-WRF中。</p>
+<h1 id="与SNICAR结合"><a href="#与SNICAR结合" class="headerlink" title="与SNICAR结合"></a>与SNICAR结合</h1><p>如前文代码描述，WRF-Noah-NP中，在有雪时地表的反照率计算如下：</p>
+<p>$<br>\alpha_{ground}&#x3D;\alpha_{snow}*SCF+(1-SCF)*\alpha_{soil}<br>$</p>
+<p>SCF即为积雪覆盖率，在代码中为FSNO，相关代码参见上文。<br>如前所言，Noah-MP中对于雪反照率的参数方案主要与雪龄与太阳高度角相关，然而该方案对于积雪的融化与雪粒、雪形态等微物理过程的考虑较为欠缺。此外，对于雪中吸收性粒子对雪反照率的影响考虑并不彻底。<br>为此，我们考虑使用SNICAR模式，对Noah-MP中的雪物理过程进行修正。</p>
+<p>SNICAR(the Snow Ice and Aerosol Radiative model)是一个多层耦合积雪老化和辐射转移方案，并被耦合至了CLM陆面模式中，并被WRF使用，它利用Mie理论计算了冰粒和吸光杂质的光学性质，辐射传输模型采用的五波段光谱网格。冰的光学性质取决于雪的有效晶粒尺寸，而这些都被SNICAR中雪有效粒径考虑在内。</p>
+<h2 id="SNICAR对雪反照率的计算"><a href="#SNICAR对雪反照率的计算" class="headerlink" title="SNICAR对雪反照率的计算"></a>SNICAR对雪反照率的计算</h2><p>SNICAR根据Legagneux等人[2004]的经验方程计算了代表雪老化过程的有效雪粒半径,这是一个与雪温$T_{snow}$、雪层间温度梯度$TG_{snow}$和雪密度$\rho_{snow}$的函数。公式为：<br>$$<br>r_e(t)&#x3D;[r_e(t-1)+\frac{dr_e}{dt}<em>{dry}dt]f</em>{old}+r_{e,refreeze}f_{refreeze}+r_{e,fresh_snow}f_{fresh_snow} \tag{1}<br>$$<br>$$<br>\frac{dr_e}{dt}<em>{dry}&#x3D;\frac{dr_e}{dt}</em>{0}\frac{\tau}{dr_{fresh_snow}+\tau}^{\frac{1}{\kappa}} \tag{2}<br>$$<br>$$<br>\frac{dr_e}{dt}<em>{wet}&#x3D;\frac{10^{18}C_1f^3</em>{liq}}{4\pi r_e^2} \tag{3}<br>$$<br>SNICAR模式将雪分为五层，并考虑了吸收性粒子的粒径、老化、形态以及雪融化效率等，上述公式（1）给出了SNICAR中雪有效粒径的计算公式，公式（2）和（3）则为干变质作用和湿变质作用引起的雪半径的变质。</p>
+<p>$r_{e,fresh_snow}$设为恒定值54μm;τ和κ是离线计算的最佳拟合参数，并从查找表中提取，查找表基于雪温度$T_{snow}$、雪温度梯度$TG_{snow}$、雪密度$\rho_{snow}$;C1为Brun[1989]的湿雪老化常数，$f_{liq}$为雪中的液态水分数，$r_{e,refreeze}$设置为1000 μm, $f_{refreeze}$为再冻层质量的百分比，$f_{new_snow}$为新雪层质量的百分比。</p>
+<p>SNICAR模式可以较为准确的描述雪层的辐射传输特性与垂直结构，非常适合研究吸收性杂杂质对于积雪反照率的影响，同时对与陆地冰川、积雪也有较好地区分，然而，SNICAR模式对于计算的成本要求过高，不适用于长时间序列或高分辨率模拟。为此，考虑将SNICAR模式与Noah-MP耦合，改进Noah-MP的雪反照率过程，同时保留Polar-WRF中对于Noah-MP对于海冰能量平衡的计算。</p>
+<h2 id="SNICAR与Noah-MP的耦合"><a href="#SNICAR与Noah-MP的耦合" class="headerlink" title="SNICAR与Noah-MP的耦合"></a>SNICAR与Noah-MP的耦合</h2><p>将SNICAR辐射传输方案的输出的雪反照率替代Noah-MP BATS计算的雪反照率，SNICAR模式的输入可通过WRF&#x2F;Noah-MP的输出与观测得到。</p>
+<center><img src="https://alpha.glilmu.com/i/2022/12/05/txpqcz.jpg
+" srcset="/img/loading.gif" lazyload width="700" > SNICAR与WRF/Noah-MP耦合示意图 </center>
+
+<h1 id="总结与参考文献"><a href="#总结与参考文献" class="headerlink" title="总结与参考文献"></a>总结与参考文献</h1><p>我们可以将当前对于积雪反照率的改进总结为3种方式：</p>
+<ol>
+<li><p><strong>对输入的静态地理数据的改进。</strong></p>
+<p>主要修改输入的土地利用类型、植被覆盖与背景反照率</p>
+</li>
+<li><p><strong>对雪反照率过程参数的改进</strong></p>
+<p>主要修改雪反照率过程的参数，一般根据观测或高分辨率卫星数据修改。</p>
+</li>
+<li><p><strong>引入或改进新的雪反照率方案，并将新雪反照率方案应用至WRF&#x2F;Noah-MP中</strong></p>
+</li>
+</ol>
+<p>其中第1种在目前研究中主要是以辅助或者研究植被冠层的影响为主，而对2、3种方式而言，其改进都要基于现场观测数据的基础之上的，或者至少要用现场观测数据来作为验证，无论如何，当前情况下，观测与模拟的结合都是当前研究的趋势。通过观测修正模式中的Default，对模式模拟性能进行改进，又通过观测来验证；同时，被改进后的模式被应用至整个研究区域，用来分析研究区域气象、气候因素变化的原因，也降低了气候模拟的不确定性。</p>
+<p>作为一个复杂混沌系统，将来，气象与气候的研究趋势将会向多尺度、多圈层、多源数据的结合与应用上。</p>
+<p><strong>参考文献</strong></p>
+<ol>
+<li>Liu, L.; Menenti, M.; Ma, Y .<br>Evaluation of Albedo Schemes in<br>WRF Coupled with Noah-MP on the<br>Parlung No. 4 Glacier. Remote Sens.<br>2022, 14, 3934. <a target="_blank" rel="noopener" href="https://doi.org/">https://doi.org/</a><br>10.3390&#x2F;rs14163934</li>
+<li>Oaida, C. M., Y. Xue, M. G. Flanner,<br>S. M. Skiles, F. De Sales, and T. H. Painter<br>(2015), Improving snow albedo<br>processes in WRF&#x2F;SSiB regional climate<br>model to assess impact of dust and<br>black carbon in snow on surface energy<br>balance and hydrology over western<br>U.S., J. Geophys. Res. Atmos., 120,<br>3228–3248, doi:10.1002&#x2F;2014JD022444.</li>
+<li>Abolafia-Rosenzweig, R., He, C.,<br>McKenzie Skiles, S., Chen, F., &amp; Gochis,<br>D. (2022). Evaluation and optimization<br>of snow albedo scheme in Noah-MP<br>land surface model using in situ spectral<br>observations in the Colorado Rockies.<br>Journal of Advances in Modeling Earth<br>Systems, 14, e2022MS003141. <a target="_blank" rel="noopener" href="https://doi/">https://doi</a>.<br>org&#x2F;10.1029&#x2F;2022MS003141</li>
+<li>Wang, W., Yang, K., Zhao, L., Zheng, Z., Lu, H., Mamtimin, A., Ding, B., Li, X., Zhao, L., Li, H., Che, T., &amp; Moore, J. C. (2020). Characterizing Surface Albedo of Shallow Fresh Snow and Its Importance for Snow Ablation on the Interior of the Tibetan Plateau, Journal of Hydrometeorology, 21(4), 815-827. Retrieved Dec 6, 2022, from <a target="_blank" rel="noopener" href="https://journals.ametsoc.org/view/journals/hydr/21/4/jhm-d-19-0193.1.xml">https://journals.ametsoc.org/view/journals/hydr/21/4/jhm-d-19-0193.1.xml</a></li>
+<li>lanner, M. G., Arnheim, J. B., Cook, J. M., Dang, C., He, C., Huang, X., Singh, D., Skiles, S. M., Whicker, C. A., and Zender, C. S.: SNICAR-ADv3: a community tool for modeling spectral snow albedo, Geosci. Model Dev., 14, 7673–7704, <a target="_blank" rel="noopener" href="https://doi.org/10.5194/gmd-14-7673-2021">https://doi.org/10.5194/gmd-14-7673-2021</a>, 2021.</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%9E%83%E5%9C%BE%E7%AC%94%E8%AE%B0/" class="category-chain-item">垃圾笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/WRF/">#WRF</a>
+      
+        <a href="/tags/%E6%95%B0%E5%80%BC%E6%A8%A1%E5%BC%8F/">#数值模式</a>
+      
+        <a href="/tags/%E9%99%86%E9%9D%A2%E6%A8%A1%E5%BC%8F/">#陆面模式</a>
+      
+        <a href="/tags/Noah-MP/">#Noah MP</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Noah MP中雪反照率的计算改进</div>
+      <div>http://zhangzilu0831.github.io/2022/11/14/Noah-MP中雪反照率的计算改进/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Zhang ZL</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年11月14日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/11/11/%E5%BD%B1%E5%AD%90/" title="影子">
+                        <span class="hidden-mobile">影子</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  <article id="comments" lazyload>
+    
+  <div id="valine"></div>
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#valine', function() {
+      Fluid.utils.createScript('https://lib.baomitu.com/valine/1.5.1/Valine.min.js', function() {
+        var options = Object.assign(
+          {"appId":"Jd6McYs2ASX60y4dn5rROdgW-gzGzoHsz","appKey":"nkMyBDpHq0B0zoEYTeeRq5kD","path":"window.location.pathname","placeholder":null,"avatar":"retro","meta":["nick","mail","link"],"requiredFields":[],"pageSize":10,"lang":"zh-CN","highlight":false,"recordIP":false,"serverURLs":"","emojiCDN":null,"emojiMaps":null,"enableQQ":false},
+          {
+            el: "#valine",
+            path: window.location.pathname
+          }
+        )
+        new Valine(options);
+        Fluid.utils.waitElementVisible('#valine .vcontent', () => {
+          var imgSelector = '#valine .vcontent img:not(.vemoji)';
+          Fluid.plugins.imageCaption(imgSelector);
+          Fluid.plugins.fancyBox(imgSelector);
+        })
+      });
+    });
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+  </article>
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="leancloud-site-pv-container" style="display: none">
+        总访问量 
+        <span id="leancloud-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="leancloud-site-uv-container" style="display: none">
+        总访客数 
+        <span id="leancloud-site-uv"></span>
+         人
+      </span>
+    
+    
+
+  
+</div>
+
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script defer src="/js/leancloud.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+  
+<script src="//cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/metowolf/MetingJS@1.2/dist/Meting.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/live2dw/assets/tororo.model.json"},"display":{"position":"right","width":150,"height":300,"hOffset":-15,"vOffset":-15},"mobile":{"show":true},"react":{"opacity":0.7},"log":false});</script></body>
+</html>
