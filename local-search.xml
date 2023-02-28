@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>研究计划-2023.03</title>
+    <link href="/2023/03/03/%E7%A0%94%E7%A9%B6%E8%AE%A1%E5%88%92-2023.03/"/>
+    <url>/2023/03/03/%E7%A0%94%E7%A9%B6%E8%AE%A1%E5%88%92-2023.03/</url>
+    
+    <content type="html"><![CDATA[<h1>要点</h1><p>使用Polar-WRF,对北极地区(Pan-Arctic)进行模拟与评估，评估要素：地表温度、地表能量收支、地表感热潜热、地面温压湿风、边界层高度、边界层各气象要素廓线、地面雪参数（雪水当量、雪深等）。</p><p>通过模拟评估过程，熟悉Polar-WRF，为下一步研究黑碳沉降与雪反照率反馈奠定基础。</p><h1>实验设计</h1><p>模拟区域：北极地区（60°N），一层嵌套，27km分辨率，垂直层五十层，一年模拟（2018.03-2019.02）</p><p>敏感性实验：使用不同的海冰数据模拟与对比。</p><h1>数据</h1><p>怀俄明大学探空数据：<a href="http://weather.uwyo.edu/upperair/sounding.html">http://weather.uwyo.edu/upperair/sounding.html</a></p><p>站点数据：<a href="https://gml.noaa.gov/dv/data/">https://gml.noaa.gov/dv/data/</a></p><p><a href="https://psl.noaa.gov/arctic/data/">https://psl.noaa.gov/arctic/data/</a></p><p>再分析资料： 加拿大CMC积雪再分析资料（雪深与雪水当量）</p><p>卫星数据：AMSR-E/AMSR-2海冰密集度数据集，分辨率12.5km×12.5km，1day</p><p>RDEFT4：25km×25km，30day</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>垃圾idea</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>研究思路</tag>
+      
+      <tag>idea</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>盒子</title>
     <link href="/2023/01/13/%E7%9B%92%E5%AD%90/"/>
     <url>/2023/01/13/%E7%9B%92%E5%AD%90/</url>
