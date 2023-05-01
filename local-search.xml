@@ -4,6 +4,35 @@
   
   
   <entry>
+    <title>研究计划——北极地气交换和大气边界层过程</title>
+    <link href="/2023/04/29/%E5%8C%97%E6%9E%81%E5%9C%B0%E6%B0%94%E4%BA%A4%E6%8D%A2%E4%B8%8E%E8%83%BD%E9%87%8F%E8%BF%87%E7%A8%8B/"/>
+    <url>/2023/04/29/%E5%8C%97%E6%9E%81%E5%9C%B0%E6%B0%94%E4%BA%A4%E6%8D%A2%E4%B8%8E%E8%83%BD%E9%87%8F%E8%BF%87%E7%A8%8B/</url>
+    
+    <content type="html"><![CDATA[<h1>研究目标</h1><p>评估Polar-WRF对北极地区地气交换和大气边界层过程的模拟能力。</p><p>目的：</p><ol><li><p>评估Polar-WRF对北极地表过程的模拟能力。</p></li><li><p>探寻北极地区地表与大气边界层过程时空变化特征。</p></li><li><p>讨论当前对北极地区地表与边界层过程模拟的不确定性，为未来使用模式量化评估黑碳沉降对北极气候影响奠定基础。</p></li></ol><h1>使用数据</h1><p>MOSAic：</p><p><a href="https://www.pangaea.de/?q=MOSAiC&amp;offset=30">数据下载网址</a></p><p><a href="https://mosaic-expedition.org/publications-2/">Publications</a></p><p>怀俄明大学探空数据：基本气象要素</p><p>卫星遥感数据：海冰密集度</p><p>再分析资料：雪深、雪水当量</p><h1>变量</h1><p>地面：温度、辐射四分量、感热/潜热通量（计算）、风速、湿度</p><p>下垫面：雪深、雪水当量、积雪覆盖、积雪时间、海冰密度等等</p><p>大气：温度廓线、比湿廓线、位温廓线、风速廓线 （边界层，20-15Km以下）</p><h1>计算&amp;分析</h1><p>一般使用标准：<br>平均偏差（MB）、均方根偏差（RMSD）、相关系数（COR）</p><h1>WRF设置/敏感性实验</h1><p>模拟个例选择：<br>冬季个例：2020.1.25-1.30：与MOSAiC的观测时间与模拟工作(Evaluation of simulations of near-surface variables using the regional climate model CCLM<br>for the MOSAiC winter period)对应。<br>春季个例：2020.4.22-4.26</p><p>分辨率：27Km，一层嵌套</p><p>模式层顶：10hPa</p><p>相关设定：</p><figure class="highlight subunit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs subunit"> &amp;physics<br>! physics_suite                       = &#x27;CONUS&#x27;<br> mp_physics                          =  8,    <span class="hljs-string">-1</span>,<br> cu_physics                          =  3,    <span class="hljs-string">-1</span>,<br> cu_rad_feedback                     = .true.<br> ra_lw_physics                       =  4,    <span class="hljs-string">-1</span>,<br> ra_sw_physics                       =  4,    <span class="hljs-string">-1</span>,<br> bl_pbl_physics                      =  2,    <span class="hljs-string">-1</span>,<br> sf_sfclay_physics                   =  2,    <span class="hljs-string">-1</span>,<br> sf_surface_physics                  =  4,    <span class="hljs-string">-1</span>,<br> radt                                = 27,    15,<br> bldt                                = 0,     0,<br> cudt                                = 0,     0,<br> icloud                              = 1,<br> num_land_cat                        = 21,<br> sf_urban_physics                    = 0,     0,<br> fractional_seaice                   = 1,<br> /<br>注：sf_clay和bl_pbl选择5（MYNN）则会出现模式中断现象<br></code></pre></td></tr></table></figure><p>敏感性实验：</p><table><thead><tr><th><strong>Case</strong></th><th><strong>Seaice</strong></th><th><strong>SNOW</strong></th><th><strong>Ice freeboard</strong></th><th><strong>Snow albedo</strong></th><th><strong>Time</strong></th></tr></thead><tbody><tr><td>p0</td><td>AMSR2</td><td>ERA5</td><td>RDEFT4</td><td>Default</td><td>Winter,Spring</td></tr><tr><td>p1</td><td>No</td><td>ERA5</td><td>RDEFT4</td><td>Default</td><td>Winter</td></tr><tr><td>p2</td><td>AMSR2</td><td>No</td><td>RDEFT4</td><td>Default</td><td>Winter</td></tr><tr><td>p3</td><td>AMSR2</td><td>ERA5</td><td>RDEFT4</td><td>reduced by one-third</td><td>Winter</td></tr><tr><td>p4</td><td>RDEFT4</td><td>ERA5</td><td>No</td><td>Default</td><td>Wintet,Spring</td></tr><tr><td>p5</td><td>RDEFT4</td><td>ERA5</td><td>RDEFT4</td><td>Default</td><td>Wintet,Spring</td></tr><tr><td>p6</td><td>AMSR2</td><td>Fnl</td><td>RDEFT4</td><td>Default</td><td>Winter,Spring</td></tr><tr><td>p7</td><td>ERA5</td><td>ERA5</td><td>RDEFT4</td><td>Default</td><td>Winter,Spring</td></tr></tbody></table><p>p0:对照组，默认设定。</p><p>p1-3：分别测试模式对于海冰、积雪、及雪反照率的敏感性,只有冬季个例。</p><p>p4-6：测试模式对于积雪资料、海冰资料与航道冰的敏感性与评估，和观测资料对比。</p><h1>例句</h1><ul><li>Moreover, all of these regional processes are<br>subject to, and possibly play a role in, potential shifts in large-scale atmospheric circulation.(研究意义)</li><li>Our understanding of Arctic atmospheric processes is based on spatially and temporally sparse observations over the last decades using a variety of approaches.(不确定性)</li><li>Despite the vast knowledge gained from past Arctic<br>observations, numerous uncertainties remain in modeling the Arctic atmosphere and its interactions within the coupled climate system.(引出研究目标)</li><li>struggle to represent…… , ……are likely oversimplified,leading to major issues in simulating this key surface coupling process with stark implications for sea ice properties</li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>垃圾笔记</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>北极气候</tag>
+      
+      <tag>文献阅读</tag>
+      
+      <tag>地气交换</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>研究计划-2023.03</title>
     <link href="/2023/03/03/%E7%A0%94%E7%A9%B6%E8%AE%A1%E5%88%92-2023.03/"/>
     <url>/2023/03/03/%E7%A0%94%E7%A9%B6%E8%AE%A1%E5%88%92-2023.03/</url>
